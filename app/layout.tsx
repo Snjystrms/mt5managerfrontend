@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "./globals.css";
@@ -8,7 +8,7 @@ import { getApiBaseUrl } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "MT5 Manager Test App",
-  description: "Simple frontend for testing an MT5 Manager backend API."
+  description: "Simple frontend for testing the current MT5 Manager backend endpoints."
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                   <div className="space-y-2">
                     <h1 className="text-3xl font-semibold tracking-tight text-ink">
-                      Minimal frontend for exercising MT5 manager endpoints
+                      Minimal frontend for exercising the current MT5 manager endpoints
                     </h1>
                     <p className="max-w-3xl text-sm text-muted">
                       Set <code className="rounded bg-canvas px-1 py-0.5">NEXT_PUBLIC_API_BASE_URL</code>,

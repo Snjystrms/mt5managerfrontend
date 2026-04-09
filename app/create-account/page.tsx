@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 
@@ -7,16 +7,22 @@ import { JsonViewer } from "@/components/json-viewer";
 import { PageShell } from "@/components/page-shell";
 import { RequestState } from "@/components/request-state";
 import { SectionCard } from "@/components/section-card";
+import { TextareaField } from "@/components/textarea-field";
 import { apiRequest } from "@/lib/api";
+import { parseJsonInput } from "@/lib/json";
 import { accountFields, initialAccountFormValues } from "@/lib/mt5-fields";
 
 export default function CreateAccountPage() {
   const [formValues, setFormValues] = useState<Record<string, string>>(initialAccountFormValues);
+  const [extraFields, setExtraFields] = useState('{\n  "additionalProp1": {}\n}');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<unknown>(null);
 
-  const requiredFieldNames = useMemo(() => ["group", "first_name", "last_name"], []);
+  const requiredFieldNames = useMemo(
+    () => ["group", "leverage", "first_name", "last_name", "main_password", "investor_password"],
+    []
+  );
 
   function updateField(name: string, value: string) {
     setFormValues((current) => ({ ...current, [name]: value }));
@@ -28,9 +34,24 @@ export default function CreateAccountPage() {
     setError(null);
 
     try {
-      const payload = Object.fromEntries(
-        Object.entries(formValues).filter(([, value]) => value.trim() !== "")
-      );
+      const payload = {
+        group: formValues.group,
+        leverage: formValues.leverage ? Number(formValues.leverage) : 100,
+        first_name: formValues.first_name,
+        last_name: formValues.last_name,
+        email: formValues.email,
+        phone: formValues.phone,
+        country: formValues.country,
+        city: formValues.city,
+        state: formValues.state,
+        address: formValues.address,
+        zip_code: formValues.zip_code,
+        comment: formValues.comment,
+        extra_fields: parseJsonInput(extraFields, {}),
+        main_password: formValues.main_password,
+        investor_password: formValues.investor_password
+      };
+
       const result = await apiRequest("/accounts", {
         method: "POST",
         body: payload
@@ -46,12 +67,12 @@ export default function CreateAccountPage() {
   return (
     <PageShell
       title="Create Account"
-      description="Submit a lightweight account-creation payload to POST /accounts and inspect the backend response."
+      description="Submit the current POST /accounts payload expected by the backend and inspect the JSON response."
     >
       <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
         <SectionCard
           title="Account Form"
-          description="Leave optional fields empty if you only want to test a smaller payload."
+          description="Fields here match the updated create-account contract from your backend image."
         >
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
@@ -70,6 +91,15 @@ export default function CreateAccountPage() {
                   />
                 </div>
               ))}
+              <div className="md:col-span-2">
+                <TextareaField
+                  label="Extra Fields JSON"
+                  name="extra_fields"
+                  value={extraFields}
+                  onChange={setExtraFields}
+                  helperText='Example: { "additionalProp1": {} }'
+                />
+              </div>
             </div>
             <div className="flex flex-wrap gap-3">
               <button
@@ -82,6 +112,7 @@ export default function CreateAccountPage() {
                 type="button"
                 onClick={() => {
                   setFormValues(initialAccountFormValues);
+                  setExtraFields('{\n  "additionalProp1": {}\n}');
                   setResponse(null);
                   setError(null);
                 }}

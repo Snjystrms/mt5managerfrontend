@@ -12,13 +12,12 @@ Simple Next.js frontend for testing an existing MT5 Manager backend API.
 
 ## Features
 
-- Dashboard health and manager overview
-- Groups and account-products lookup
+- Health check
 - Create account form
-- Users lookup by group mask or login
-- Account detail and open positions
-- History lookup with date range
-- Balance adjustment testing
+- Patch user form
+- Balance operation form
+- History deals lookup
+- History trades lookup
 
 ## Environment Variables
 
@@ -58,4 +57,5 @@ npm run start
 - This app intentionally avoids complex authentication so you can focus on backend testing.
 - All pages show loading and error states.
 - Responses are displayed as readable JSON and simple tables.
+- The UI now matches these current endpoints: `GET /health`, `POST /accounts`, `PATCH /users/{login}`, `POST /balance`, `GET /history/deals`, and `GET /history/trades`.
 - The API base URL is read from `NEXT_PUBLIC_API_BASE_URL`, which keeps configuration simple for local and Vercel environments.

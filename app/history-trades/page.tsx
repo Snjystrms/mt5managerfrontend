@@ -1,43 +1,28 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
 import { DataTable } from "@/components/data-table";
 import { FormField } from "@/components/form-field";
 import { JsonViewer } from "@/components/json-viewer";
+import { KeyValueTable } from "@/components/key-value-table";
 import { PageShell } from "@/components/page-shell";
 import { RequestState } from "@/components/request-state";
 import { SectionCard } from "@/components/section-card";
 import { apiRequest, buildQueryString } from "@/lib/api";
 import { isRecord } from "@/lib/utils";
 
-function extractRows(data: unknown, key: string) {
-  if (isRecord(data) && Array.isArray(data[key])) {
-    return data[key].filter(
-      (item): item is Record<string, unknown> => typeof item === "object" && item !== null
-    );
-  }
-
-  if (Array.isArray(data)) {
-    return data.filter(
-      (item): item is Record<string, unknown> => typeof item === "object" && item !== null
-    );
-  }
-
-  return [];
-}
-
-export default function HistoryPage() {
+export default function HistoryTradesPage() {
   const [login, setLogin] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [history, setHistory] = useState<unknown>(null);
+  const [response, setResponse] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchHistory() {
+  async function fetchTrades() {
     if (!login.trim()) {
-      setError("Enter a login before requesting account history.");
+      setError("Enter a login before requesting history trades.");
       return;
     }
 
@@ -45,35 +30,49 @@ export default function HistoryPage() {
     setError(null);
 
     try {
-      const query = buildQueryString({
-        from_dt: fromDate,
-        to_dt: toDate
-      });
-      const response = await apiRequest(`/accounts/${login.trim()}/history${query}`);
-      setHistory(response);
+      const result = await apiRequest(
+        `/history/trades${buildQueryString({
+          login,
+          from_dt: fromDate,
+          to_dt: toDate
+        })}`
+      );
+      setResponse(result);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Failed to fetch history.");
+      setError(requestError instanceof Error ? requestError.message : "Failed to fetch trades.");
     } finally {
       setLoading(false);
     }
   }
 
-  const deals = extractRows(history, "deals");
-  const tradeLog = extractRows(history, "trade_log");
+  const items =
+    isRecord(response) && Array.isArray(response.items)
+      ? response.items.filter(
+          (item): item is Record<string, unknown> => typeof item === "object" && item !== null
+        )
+      : [];
+
+  const summary =
+    isRecord(response)
+      ? {
+          login: response.login,
+          from_dt: response.from_dt,
+          to_dt: response.to_dt,
+          count: response.count
+        }
+      : null;
 
   return (
     <PageShell
-      title="History"
-      description="Inspect account history within a date range and review deals or trade log output."
+      title="History Trades"
+      description="Query GET /history/trades with login and optional date range filters."
     >
-      <SectionCard
-        title="History Request"
-        description="GET /accounts/{login}/history?from_dt=...&to_dt=..."
-      >
+      <SectionCard title="Request" description="GET /history/trades">
         <div className="grid gap-4 md:grid-cols-3">
           <FormField
             label="Login"
             name="login"
+            type="number"
             value={login}
             onChange={setLogin}
             placeholder="123456"
@@ -95,10 +94,10 @@ export default function HistoryPage() {
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
           <button
-            onClick={() => void fetchHistory()}
+            onClick={() => void fetchTrades()}
             className="rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
           >
-            Fetch History
+            Fetch Trades
           </button>
         </div>
         <div className="mt-4">
@@ -107,17 +106,16 @@ export default function HistoryPage() {
       </SectionCard>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <SectionCard title="Deals">
-          <DataTable rows={deals} emptyMessage="No deals available yet." />
+        <SectionCard title="Summary">
+          <KeyValueTable data={summary} emptyMessage="No history summary yet." />
         </SectionCard>
-
-        <SectionCard title="Trade Log">
-          <DataTable rows={tradeLog} emptyMessage="No trade log available yet." />
+        <SectionCard title="Items">
+          <DataTable rows={items} emptyMessage="No trade items yet." />
         </SectionCard>
       </div>
 
-      <SectionCard title="Raw History Response">
-        <JsonViewer data={history} emptyMessage="No history response loaded yet." />
+      <SectionCard title="Raw Response">
+        <JsonViewer data={response} emptyMessage="No history trades response yet." />
       </SectionCard>
     </PageShell>
   );

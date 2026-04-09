@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -6,13 +6,12 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/groups", label: "Groups / Products" },
+  { href: "/", label: "Health" },
   { href: "/create-account", label: "Create Account" },
-  { href: "/users", label: "Users" },
-  { href: "/account-detail", label: "Account Detail" },
-  { href: "/history", label: "History" },
-  { href: "/balance", label: "Balance" }
+  { href: "/patch-user", label: "Patch User" },
+  { href: "/balance", label: "Balance" },
+  { href: "/history-deals", label: "History Deals" },
+  { href: "/history-trades", label: "History Trades" }
 ];
 
 export function NavLinks() {

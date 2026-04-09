@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -31,10 +31,11 @@ export default function BalancePage() {
     setError(null);
 
     try {
-      const result = await apiRequest(`/accounts/${login.trim()}/balance`, {
+      const result = await apiRequest("/balance", {
         method: "POST",
         body: {
-          amount: amount ? Number(amount) : undefined,
+          login: Number(login),
+          amount: amount ? Number(amount) : 0,
           kind,
           comment
         }
@@ -52,14 +53,15 @@ export default function BalancePage() {
   return (
     <PageShell
       title="Balance"
-      description="Post simple deposit, withdrawal, or credit adjustments to the backend for testing."
+      description="Post a balance operation using the updated POST /balance contract."
     >
       <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-        <SectionCard title="Balance Adjustment" description="POST /accounts/{login}/balance">
+        <SectionCard title="Balance Adjustment" description="POST /balance">
           <form onSubmit={submitBalanceAdjustment} className="space-y-4">
             <FormField
               label="Login"
               name="login"
+              type="number"
               value={login}
               onChange={setLogin}
               placeholder="123456"
